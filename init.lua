@@ -18,6 +18,7 @@ local colorstring_to_number
 local function colorstring_to_number_fallback(col)
     colorstring_to_number_fallback = dofile(minetest.get_modpath(modname) ..
         "/colorstring_to_number.lua")
+    colorstring_to_number = colorstring_to_number_fallback
     return colorstring_to_number_fallback(col)
 end
 
@@ -29,7 +30,6 @@ if minetest.colorspec_to_colorstring then
             minetest.log("warning", ("[hud_fs] Unexpected value returned by" ..
                 " minetest.colorspec_to_colorstring(%q): %q"):format(col,
                 res))
-            colorstring_to_number = colorstring_to_number_fallback
             return colorstring_to_number_fallback(col)
         end
         return res and tonumber(res:sub(2, 7), 16)
