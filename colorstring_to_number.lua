@@ -1,8 +1,7 @@
 --
 -- hud_fs: Render formspecs into HUDs
 --
--- This is the fallback parser for ColorStrings when
--- minetest.colorspec_to_colorstring doesn't exist.
+-- This is the fallback parser for ColorStrings when modlib isn't installed.
 --
 
 -- From https://www.w3.org/TR/css-color-3/#svg-color

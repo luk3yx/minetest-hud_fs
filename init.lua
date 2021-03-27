@@ -14,28 +14,23 @@ local DEFAULT_Z_INDEX = 0
 
 local floor, type, pairs, max = math.floor, type, pairs, math.max
 
+-- Attempt to use modlib's parser
+-- The to_number_rgb function was broken before the addition of from_number_rgb
 local colorstring_to_number
-local function colorstring_to_number_fallback(col)
-    colorstring_to_number_fallback = dofile(minetest.get_modpath(modname) ..
-        "/colorstring_to_number.lua")
-    colorstring_to_number = colorstring_to_number_fallback
-    return colorstring_to_number_fallback(col)
-end
-
-if minetest.colorspec_to_colorstring then
+if minetest.global_exists("modlib") and modlib.minetest.colorspec and
+        modlib.minetest.colorspec.from_number_rgb then
+    local pcall, from_any = pcall, modlib.minetest.colorspec.from_any
     function colorstring_to_number(col)
-        local res = minetest.colorspec_to_colorstring(col)
-        if res and (res:byte(1) ~= 35 or #res < 7) then
-            -- Unexpected return value, go back to using the fallback parser.
-            minetest.log("warning", ("[hud_fs] Unexpected value returned by" ..
-                " minetest.colorspec_to_colorstring(%q): %q"):format(col,
-                res))
-            return colorstring_to_number_fallback(col)
-        end
-        return res and tonumber(res:sub(2, 7), 16)
+        local ok, spec = pcall(from_any, col)
+        if not ok then return end
+        return spec:to_number_rgb()
     end
 else
-    colorstring_to_number = colorstring_to_number_fallback
+    function colorstring_to_number(col)
+        colorstring_to_number = dofile(minetest.get_modpath(modname) ..
+            "/colorstring_to_number.lua")
+        return colorstring_to_number(col)
+    end
 end
 
 -- Hacks to allow colorize() to work to some extent on labels
