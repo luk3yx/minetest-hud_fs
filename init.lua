@@ -15,13 +15,11 @@ local DEFAULT_Z_INDEX = 0
 local floor, type, pairs, max = math.floor, type, pairs, math.max
 
 -- Attempt to use modlib's parser
--- The to_number_rgb function was broken before the addition of from_number_rgb
 local colorstring_to_number
-if minetest.global_exists("modlib") and modlib.minetest.colorspec and
-        modlib.minetest.colorspec.from_number_rgb then
-    local pcall, from_any = pcall, modlib.minetest.colorspec.from_any
+if minetest.global_exists("modlib") and (modlib.version or 0) >= 54 then
+    local pcall, from_string = pcall, modlib.minetest.colorspec.from_string
     function colorstring_to_number(col)
-        local ok, spec = pcall(from_any, col)
+        local ok, spec = pcall(from_string, col)
         if not ok then return end
         return spec:to_number_rgb()
     end
