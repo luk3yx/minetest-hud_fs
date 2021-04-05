@@ -302,6 +302,19 @@ local function compare_elems(old_elem, new_elem)
     return false, differences
 end
 
+local function reshow_hud(name, formname, data)
+    if not hud_elems[name] or hud_elems[name][formname] ~= data then
+        return
+    end
+
+    data[3] = nil
+    local fs = data[4]
+    if fs then
+        data[4] = nil
+        hud_fs.show_hud(name, formname, fs)
+    end
+end
+
 local scales = {}
 local z_indexes = {}
 function hud_fs.show_hud(player, formname, formspec)
@@ -323,8 +336,15 @@ function hud_fs.show_hud(player, formname, formspec)
         data = {{}, {}}
         hud_elems[name][formname] = data
     end
-    local ids, elems = data[1], data[2]
     local proto_ver = info.protocol_version
+
+    -- Work around client-side race conditions in MT <= 5.4.0
+    if proto_ver < 40 and data[3] then
+        data[4] = formspec
+        return
+    end
+
+    local ids, elems = data[1], data[2]
     local new_elems = render(formspec, proto_ver, scales[formname],
         z_indexes[formname])
 
@@ -392,6 +412,12 @@ function hud_fs.show_hud(player, formname, formspec)
                 elems[i] = elem
             end
 
+            -- Block future HUD modifications if the new HUD isn't empty
+            if new_elems[1] then
+                data[3] = true
+                minetest.after(0.05, reshow_hud, name, formname, data)
+            end
+
             if DEBUG then
                 minetest.chat_send_player(name, "[DEBUG] Sent " ..
                     resend_packets .. " packet(s) resending entire HUD")
@@ -436,6 +462,12 @@ function hud_fs.show_hud(player, formname, formspec)
         ids[i] = nil
         elems[i] = nil
         removed = removed + 1
+    end
+
+    -- Only block future HUD modifications if any elements have been added
+    if proto_ver < 40 and added > 0 then
+        data[3] = true
+        minetest.after(0.05, reshow_hud, name, formname, data)
     end
 
     if DEBUG then
