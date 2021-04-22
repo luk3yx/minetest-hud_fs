@@ -320,6 +320,7 @@ local z_indexes = {}
 function hud_fs.show_hud(player, formname, formspec)
     if type(player) == "string" then
         player = minetest.get_player_by_name(player)
+        if not player then return end
     end
 
     local name = player:get_player_name()
