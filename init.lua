@@ -251,9 +251,11 @@ local function render(tree, proto_ver, scale, z_index)
             end
             offset_x = -node.x * size_w
             offset_y = -node.y * size_h
-            -- return render_error('anchor[] not implemented')
         elseif nodes[node_type] then
             add_node(node_type, node)
+        elseif node_type == nil and node.hud_elem_type then
+            -- Pass through plain HUD elements
+            hud_elems[#hud_elems + 1] = node
         end
     end
 
@@ -280,9 +282,9 @@ local function compare_elems(old_elem, new_elem)
     for k, v in pairs(old_elem) do
         local v2 = new_elem[k]
         if type(v) == "table" and type(v2) == "table" then
-            -- Tables are guaranteed to be 2-dimensional vectors at the moment,
-            -- don't bother checking anything else to improve performance.
-            if v.x ~= v2.x or v.y ~= v2.y then
+            -- Tables are guaranteed to be vectors at the moment, don't bother
+            -- checking anything else to improve performance.
+            if v.x ~= v2.x or v.y ~= v2.y or v.z ~= v2.z then
                 differences[#differences + 1] = k
             end
         elseif v ~= v2 then

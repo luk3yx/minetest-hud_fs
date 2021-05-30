@@ -52,6 +52,26 @@ The following elements are supported:
 
 All valid formspec elements not listed above are ignored.
 
+### Using normal HUD element definitions
+
+If you want features can't be implemented using formspecs, you can use a list
+of HUD elements (the tables sent to `hud_add`) instead. Example:
+
+```lua
+hud_fs.show_hud(player, "waypoints", {
+    {
+        hud_elem_type = "waypoint",
+        world_pos = {x = 0, y = 0, z = 0},
+        name = "Waypoint 1"
+    },
+    {
+        hud_elem_type = "waypoint",
+        world_pos = {x = 1, y = 2, z = 3},
+        name = "Waypoint 2"
+    }
+})
+```
+
 ### Advanced API
 
  - `hud_fs.set_scale(formname, scale)`: Sets the scale of the HUD.
@@ -91,6 +111,9 @@ rejected in https://github.com/minetest/minetest/issues/10135.
 Then don't use this mod. There are plenty of other HUD library mods around such
 as [hudlib](https://github.com/octacian/hudlib) and
 [panel_lib](https://gitlab.com/zughy-friends-minetest/panel_lib).
+
+Alternatively, the API provided by this mod accepts a list of HUD elements in
+place of a formspec.
 
 ## Performance
 
