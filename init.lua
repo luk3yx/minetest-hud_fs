@@ -24,12 +24,11 @@ if minetest.global_exists("modlib") and (modlib.version or 0) >= 54 then
         return spec:to_number_rgb()
     end
 else
-    function colorstring_to_number(col)
-        colorstring_to_number = dofile(minetest.get_modpath(modname) ..
-            "/colorstring_to_number.lua")
-        return colorstring_to_number(col)
-    end
+    colorstring_to_number = dofile(minetest.get_modpath(modname) ..
+        "/colorstring_to_number.lua")
 end
+
+hud_fs.colorstring_to_number = colorstring_to_number
 
 -- Hacks to allow colorize() to work to some extent on labels
 local function get_label_number(label)
