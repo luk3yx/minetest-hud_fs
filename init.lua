@@ -417,7 +417,7 @@ function hud_fs.show_hud(player, formname, formspec)
             -- Block future HUD modifications if the new HUD isn't empty
             if new_elems[1] then
                 data[3] = true
-                minetest.after(0.01, reshow_hud, name, formname, data)
+                minetest.after(0.05, reshow_hud, name, formname, data)
             end
 
             if DEBUG then
@@ -469,7 +469,7 @@ function hud_fs.show_hud(player, formname, formspec)
     -- Only block future HUD modifications if any elements have been added
     if proto_ver < 40 and added > 0 then
         data[3] = true
-        minetest.after(0.01, reshow_hud, name, formname, data)
+        minetest.after(0.05, reshow_hud, name, formname, data)
     end
 
     if DEBUG then
