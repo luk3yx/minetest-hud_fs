@@ -42,6 +42,18 @@ local function get_label_number(label)
     return text or label, number and colorstring_to_number(number) or 0xFFFFFF
 end
 
+-- Disable the race condition workaround in 5.4.1 singleplayer
+-- The bug was fixed in 5.4.1 but there's no (easy) way to detect 5.4.1 clients
+-- The workaround is disabled for 5.5.0+ clients (if the server is 5.5.0+)
+-- regardless of this setting.
+local enable_race_condition_workaround = true
+if minetest.is_singleplayer() then
+    local version = minetest.get_version()
+    if version.project == "Minetest" and version.string == "5.4.1" then
+        enable_race_condition_workaround = false
+    end
+end
+
 local nodes = {}
 function nodes.label(node, scale)
     local text, number = get_label_number(node.label)
@@ -415,7 +427,7 @@ function hud_fs.show_hud(player, formname, formspec)
             end
 
             -- Block future HUD modifications if the new HUD isn't empty
-            if new_elems[1] then
+            if new_elems[1] and enable_race_condition_workaround then
                 data[3] = true
                 minetest.after(0.05, reshow_hud, name, formname, data)
             end
@@ -467,7 +479,7 @@ function hud_fs.show_hud(player, formname, formspec)
     end
 
     -- Only block future HUD modifications if any elements have been added
-    if proto_ver < 40 and added > 0 then
+    if proto_ver < 40 and added > 0 and enable_race_condition_workaround then
         data[3] = true
         minetest.after(0.05, reshow_hud, name, formname, data)
     end
