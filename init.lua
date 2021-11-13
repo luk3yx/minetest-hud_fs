@@ -20,7 +20,7 @@ if minetest.global_exists("modlib") and (modlib.version or 0) >= 54 then
     local pcall, from_string = pcall, modlib.minetest.colorspec.from_string
     function colorstring_to_number(col)
         local ok, spec = pcall(from_string, col)
-        if not ok then return end
+        if not ok or not spec then return end
         return spec:to_number_rgb()
     end
 else
