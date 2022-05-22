@@ -120,14 +120,14 @@ end
 
 function nodes.textarea(node, scale, add_node)
     -- Add in separate nodes for the label and background
-    if node.label ~= "" then
+    if node.label and node.label ~= "" then
         add_node("label", {
             x = node.x,
             y = node.y - 10 / scale,
             label = node.label
         })
     end
-    if node.name ~= "" then
+    if node.name and node.name ~= "" then
         add_node("box", {
             x = node.x,
             y = node.y,
@@ -214,7 +214,11 @@ nodes.image_button = nodes.button
 nodes.image_button_exit = nodes.button
 nodes.item_image_button = nodes.button
 
-local render_error
+local function render_error(err)
+    minetest.log("error", "[hud_fs] Error rendering HUD: " .. tostring(err))
+    return {}
+end
+
 local function render(tree, proto_ver, scale, z_index)
     if type(tree) == "string" then
         local err
@@ -271,12 +275,6 @@ local function render(tree, proto_ver, scale, z_index)
     end
 
     return hud_elems
-end
-
--- Defined as a local before render()
-function render_error(err)
-    return render("formspec_version[3]size[8,1]label[0,0.5;" ..
-        minetest.formspec_escape(tostring(err)) .. "]")
 end
 
 local hud_elems = {}
