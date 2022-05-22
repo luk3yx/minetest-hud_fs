@@ -73,18 +73,10 @@ function nodes.label(node, scale)
     return elem
 end
 
-function nodes.image(node, scale, _, proto_ver)
+function nodes.image(node, scale, _, possibly_using_gles)
     local w = floor(node.w * scale)
     local h = floor(node.h * scale)
     local elem_scale = {x = 1, y = 1}
-
-    -- Hacks to support MultiCraft
-    -- This is horrible and unfortunately is applied to MT clients as well
-    if proto_ver == 32 then
-        local true_w, true_h = w, h
-        w, h = 2 ^ math.ceil(math.log(w, 2)), 2 ^ math.ceil(math.log(h, 2))
-        elem_scale.x, elem_scale.y = true_w / max(w, 1), true_h / max(h, 1)
-    end
 
     local texture = node.texture_name
     if w > 0 and h > 0 and texture ~= "" then
@@ -95,6 +87,20 @@ function nodes.image(node, scale, _, proto_ver)
         -- silencing the error.
         texture = "blank.png"
     end
+
+    -- Hacks to work around textures being aligned to a power of 2 on some
+    -- video drivers
+    if possibly_using_gles then
+        local true_w = 2 ^ math.ceil(math.log(w, 2))
+        local true_h = 2 ^ math.ceil(math.log(h, 2))
+        if true_w ~= w or true_h ~= h then
+            texture = ("[combine:%sx%s:0,0=%s"):format(
+                true_w, true_h,
+                texture:gsub("\\", "\\\\"):gsub("%^", "\\^"):gsub(":", "\\:")
+            )
+        end
+    end
+
     return {
         hud_elem_type = "image",
         text = texture,
@@ -104,7 +110,7 @@ function nodes.image(node, scale, _, proto_ver)
 end
 
 -- Hack box[] into image[]
-function nodes.box(node, scale, add_node, proto_ver)
+function nodes.box(node, scale, add_node, possibly_using_gles)
     local col = node.color
     -- Add default transparency
     if col:byte(1) == 35 then
@@ -115,7 +121,7 @@ function nodes.box(node, scale, add_node, proto_ver)
         end
     end
     node.texture_name = 'hud_fs_box.png^[colorize:' .. col
-    return nodes.image(node, scale, add_node, proto_ver)
+    return nodes.image(node, scale, add_node, possibly_using_gles)
 end
 
 function nodes.textarea(node, scale, add_node)
@@ -163,7 +169,7 @@ local function get_tile_image(tiles, preferred_texture)
     return tile
 end
 
-function nodes.item_image(node, scale, add_node, proto_ver)
+function nodes.item_image(node, scale, add_node, possibly_using_gles)
     local def = minetest.registered_items[node.item_name]
     if not def then
         node.texture_name = "unknown_item.png"
@@ -180,7 +186,7 @@ function nodes.item_image(node, scale, add_node, proto_ver)
     else
         node.texture_name = "unknown_node.png"
     end
-    return nodes.image(node, scale, add_node, proto_ver)
+    return nodes.image(node, scale, add_node, possibly_using_gles)
 end
 
 function nodes.button(node, _, add_node)
@@ -219,7 +225,7 @@ local function render_error(err)
     return {}
 end
 
-local function render(tree, proto_ver, scale, z_index)
+local function render(tree, possibly_using_gles, scale, z_index)
     if type(tree) == "string" then
         local err
         tree, err = formspec_ast.parse(tree)
@@ -241,7 +247,8 @@ local function render(tree, proto_ver, scale, z_index)
     z_index = z_index or DEFAULT_Z_INDEX
 
     local function add_node(node_type, node)
-        local elem = nodes[node_type](node, scale, add_node, proto_ver)
+        local elem = nodes[node_type](node, scale, add_node,
+            possibly_using_gles)
         elem.position = pos
         elem.name = node_type
         elem.z_index = z_index
@@ -356,8 +363,12 @@ function hud_fs.show_hud(player, formname, formspec)
         return
     end
 
+    -- MultiCraft-specific detection of clients which may be using OpenGL ES 1
+    local possibly_using_gles = (info.platform == "Android" or
+        info.platform == "iOS")
+
     local ids, elems = data[1], data[2]
-    local new_elems = render(formspec, proto_ver, scales[formname],
+    local new_elems = render(formspec, possibly_using_gles, scales[formname],
         z_indexes[formname])
 
     -- Z-index was added to MT 5.2.0 (protocol version 39) and is ignored by
