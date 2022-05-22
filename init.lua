@@ -76,7 +76,6 @@ end
 function nodes.image(node, scale, _, possibly_using_gles)
     local w = floor(node.w * scale)
     local h = floor(node.h * scale)
-    local elem_scale = {x = 1, y = 1}
 
     local texture = node.texture_name
     if w > 0 and h > 0 and texture ~= "" then
@@ -105,7 +104,7 @@ function nodes.image(node, scale, _, possibly_using_gles)
         hud_elem_type = "image",
         text = texture,
         alignment = {x = 1, y = 1},
-        scale = elem_scale,
+        scale = {x = 1, y = 1},
     }
 end
 
