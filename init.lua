@@ -263,7 +263,6 @@ local function render(tree, possibly_using_gles, scale, z_index, window)
             x = (node.x + offset_x) * scale,
             y = (node.y + offset_y) * scale
         }
-        if node_type == "box" then print(dump(elem)) end
         hud_elems[#hud_elems + 1] = elem
         z_index = z_index + 1
     end
