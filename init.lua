@@ -74,6 +74,7 @@ function nodes.label(node, scale)
     return elem
 end
 
+local log2_div = math.log(2)
 function nodes.image(node, scale, _, possibly_using_gles, client_hud_scale)
     -- The provided texture could be any size so this has to scale it first
     local w = floor(node.w * scale * client_hud_scale)
@@ -92,8 +93,8 @@ function nodes.image(node, scale, _, possibly_using_gles, client_hud_scale)
     -- Hacks to work around textures being aligned to a power of 2 on some
     -- video drivers
     if possibly_using_gles then
-        local true_w = 2 ^ math.ceil(math.log(w, 2))
-        local true_h = 2 ^ math.ceil(math.log(h, 2))
+        local true_w = 2 ^ math.ceil(math.log(w) / log2_div)
+        local true_h = 2 ^ math.ceil(math.log(h) / log2_div)
         if true_w ~= w or true_h ~= h then
             texture = ("[combine:%sx%s:0,0=%s"):format(
                 true_w, true_h,
