@@ -77,6 +77,9 @@ hud_fs.show_hud(player, "waypoints", {
 })
 ```
 
+The "type" field shown above is introduced in MT 5.9-dev. hud_fs will
+automatically convert this to hud_elem_type on older servers.
+
 ### Advanced API
 
  - `hud_fs.set_scale(formname, scale)`: Sets the scale of the HUD.
